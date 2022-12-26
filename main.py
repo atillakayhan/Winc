@@ -1,33 +1,62 @@
-# Do not modify these lines
-__winc_id__ = '7b9401ad7f544be2a23321292dd61cb6'
-__human_name__ = 'arguments'
+__winc_id__ = "ae539110d03e49ea8738fd413ac44ba8"
+__human_name__ = "files"
 
-# Add your code after this line
+#1
+import os
 
-#Part 1
-def greet(name, template='Hello, <name>!'):
-    new_template = template.replace('<name>', name)
-    return new_template
+def clean_cache():
+    os.chdir('files')
+    if os.path.exists('cache'):
+        for files in os.listdir('cache'):
+            files_path = os.path.join('cache', files)
+            os.remove(files_path)
+    else:
+        os.mkdir('cache')
+(clean_cache())
 
-print(greet('atilla', 'yooow <name>'))
+#2
+import os
+import shutil
+import zipfile
 
-#Part 2
-dict_info_planets = {
-        'sun': 274, 'jupiter': 24.9, 'neptune': 11.2, 'saturn': 10.4,
-        'earth': 9.8, 'uranus': 8.9, 'venus': 8.9, 'mars': 3.7, 
-        'mercury': 3.7, 'moon': 1.6, 'pluto': 0.6
-    }
-def force(mass, body='earth'):
-    world = (dict_info_planets[body])
-    calculation = (mass * world)
-    return round(calculation)
-print(force(100))
+def cache_zip(zip_file_path, cache_dir_path):
+    if not os.path.exists(cache_dir_path):
+        os.makedirs(cache_dir_path)
 
-#part 3
-def pull(m1, m2, d):
-    gravity = 6.674*10**-11
-    distance_2 = d ** 2
-    calculation_1 = (m1 *m2) / distance_2
-    calculation_2 = gravity * calculation_1
-    return calculation_2
-print(pull(800, 1500, 3))
+    for file in os.listdir(cache_dir_path):
+        file_path = os.path.join(cache_dir_path, file)
+        if os.path.isfile(file_path):
+            os.unlink(file_path)
+        elif os.path.isdir(file_path):
+            shutil.rmtree(file_path)
+
+    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+        zip_ref.extractall(cache_dir_path)
+
+#3
+import os
+
+def cached_files():
+    lists = []
+    cache_dir_path = 'C:\\Users\\atill\\Onedrive\\Bureaublad\\important\\back-end developer\\Winc\\files\\cache'
+    file_paths = [os.path.join(cache_dir_path, file) for file in os.listdir(cache_dir_path) if os.path.isfile(os.path.join(cache_dir_path, file))]
+    lists.append(file_paths)
+    return lists
+
+
+#4
+def find_password(files):
+    # Iterate over the list of files
+    for file in files:
+        # Open the file for reading
+        with open(file, 'r') as f:
+            # Read the contents of the file
+            contents = f.read()
+
+            # Search for the password in the contents
+            if 'password' in contents:
+                # Return the password if found
+                return contents.split('password:')[1].strip()
+
+    # Return None if the password is not found in any of the files
+    return None
