@@ -1,50 +1,60 @@
-__winc_id__ = "ae539110d03e49ea8738fd413ac44ba8"
-__human_name__ = "files"
+__winc_id__ = "d7b474e9b3a54d23bca54879a4f1855b"
+__human_name__ = "Betsy Webshop"
 
-import os
-import shutil
-import zipfile
-zip_bestand = os.path.join(os.getcwd(), 'files', 'data.zip')
-cache_bestand = os.path.join(os.getcwd(), 'files','cache')
+from peewee import *
+db = SqliteDatabase('betsy.db')
+
+def search(term):
+    return Product.select().where(
+        (Product.name ** f'%{term}%') | (Product.description ** f'%{term}%')
+    ).order_by(Product.name)
 
 
-#1
-def clean_cache():
-    os.chdir('files')
-    if os.path.exists('cache'):
-        for files in os.listdir('cache'):
-            files_path = os.path.join('cache', files)
-            os.remove(files_path)
-    else:
-        os.mkdir('cache')
+def list_user_products(user_id):
+    return user.products
 
-#2
-def cache_zip(zip_file_path, cache_dir_path):
 
-    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
-        zip_ref.extractall(cache_dir_path)
 
-#3
-def cached_files():
-    cache_path = os.path.abspath("./cache")
-    if not os.path.exists(cache_path):
-        return []
-    file_list = os.listdir(cache_path)
-    file_list = [os.path.join(cache_path, f) for f in file_list if os.path.isfile(os.path.join(cache_path, f))]
-    return file_list
+def list_products_per_tag(tag_id):
+    return tag.products
 
-#4
-def find_password(file_list):
-    password_indicator = "password: "
-    for file_path in file_list:
-        with open(file_path, "r") as f:
-            for line in f:
-                if password_indicator in line:
-                    return line.split(password_indicator)[-1].strip()
-    return None
-patat = os.getcwd
 
-if __name__ == "__main__":
-    clean_cache()
-    cache_zip(zip_bestand, cache_bestand)
-    
+def add_product_to_catalog(user_id, product):
+    product = Product.create(user=user, name=name, description=description, price=price, quantity=quantity)
+    if tags:
+        for tag in tags:
+            try:
+                product_tag = ProductTag.create(product=product, tag=Tag.create(name=tag))
+            except IntegrityError:
+                product_tag = ProductTag.get(product=product, tag=Tag.get(name=tag))
+    return product
+
+
+def update_stock(product_id, new_quantity):
+    product.quantity = quantity
+    product.save()
+
+
+def purchase_product(product_id, buyer_id, quantity):
+    if product.quantity < quantity:
+        raise ValueError('Not enough stock')
+    with db.atomic():
+        transaction = Transaction.create(buyer=buyer, product=product, quantity=quantity)
+        product.quantity -= quantity
+        product.save()
+    return transaction
+
+
+def remove_product(product_id):
+    product.delete_instance()
+
+def populate_test_database():
+    with db.atomic():
+        # Create users
+        alice = User.create(name='Alice', address='123 Main St', billing_info='...')
+        bob = User.create(name='Bob', address='456 Elm St', billing_info='...')
+        
+        # Create products
+        sweater = Product.create(user=alice, name='Sweater', description='A warm sweater', price=50.00, quantity=10)
+        mug = Product.create(user=bob, name='Mug', description='A coffee mug', price=10.00, quantity=20
+
